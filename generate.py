@@ -1,34 +1,36 @@
 
-import MaxPlus
+import os
 
+from max_com import generate_mesh_in_3dsmax
+from maya_com import generate_mesh_in_maya
 
-def generate_mesh_in_3dsmax(verts, faces):
-    """
-    @param verts: iterable of position
-    @param verts: iterable of int
-    """
+from atom import Vertex
 
-    meshcls = MaxPlus.ClassIds.TriMeshGeometry
-    geom = MaxPlus.Factory.CreateGeomObject(meshcls)
-    tri = MaxPlus.TriObject._CastFrom(geom)
+CONFIG = {}
 
-    mesh = tri.GetMesh()
-    mesh.SetNumVerts(len(verts))
-    mesh.SetNumFaces(len(faces) / 3)
+def read_config():
+    """ require to have '.config' file """
 
-    for idx, v in enumerate(verts):
-        mesh.SetVert(idx, MaxPlus.Point3(*v.pos()))
+    def parse_conf(line):
+        if line == "":
+            return
 
-    for idx in range(0, len(faces), 3):
-        face = mesh.GetFace(idx / 3)
-        face.SetVerts(
-            faces[idx + 0], faces[idx + 1], faces[idx + 2]
-        )
+        if line.startswith("#") or line.startswith("//"):
+            return
+        d = line.split(' ')
+        key = d[0].replace(":", "")
+        CONFIG[key] = ' '.join(d[1:])
 
-    mesh.InvalidateGeomCache()
-    mesh.InvalidateTopologyCache()
-    MaxPlus.Factory.CreateNode(tri)
+    dirpath = os.path.dirname(__file__)
+    config_path = dirpath + "/.config"
+    if not os.path.isfile(config_path):
+        print("Can't find config file")
+        return
 
+    with open(config_path, 'r') as fp:
+        context = fp.read()
+
+    list(map(lambda x: parse_conf(x), context.split("\n")))
 
 def gen_quad(verts):
     """ @param verts: iterable of vertices, length should be 4 """
@@ -37,19 +39,11 @@ def gen_quad(verts):
         verts[2].index, verts[0].index, verts[3].index
     ]
 
-
-class Vertex(object):
-    index = 0
-    x, y, z = None, None, None
-
-    def __init__(self, index, x, y, z):
-        self.index = index
-        self.x, self.y, self.z = x, y, z
-
-    def pos(self):
-        return self.x, self.y, self.z
-
 def main():
+    """ Hello world! """
+
+    read_config()
+
     v = 10.0
     vs = [
         Vertex(0, -v, -v, -v),
@@ -70,7 +64,13 @@ def main():
     fs += gen_quad([vs[1], vs[5], vs[6], vs[2]])
     fs += gen_quad([vs[4], vs[5], vs[1], vs[0]])
 
-    generate_mesh_in_3dsmax(vs, fs)
+    MODE = CONFIG["MODE"]
+    if MODE == "MAX":
+        generate_mesh_in_3dsmax(vs, fs)
+    elif MODE == "MAYA":
+        generate_mesh_in_maya(vs, fs)
+    else:
+        print("Mode is not defined: " + MODE)
 
 
 if __name__ == "__main__":
