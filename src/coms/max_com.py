@@ -2,15 +2,17 @@
 import MaxPlus
 
 
-def generate_mesh_in_3dsmax(verts, faces):
+def generate_mesh_in_3dsmax(meshatom):
     """
-    @param verts: iterable of position
-    @param verts: iterable of int
+    @param mesh: atom mesh
     """
 
     meshcls = MaxPlus.ClassIds.TriMeshGeometry
     geom = MaxPlus.Factory.CreateGeomObject(meshcls)
     tri = MaxPlus.TriObject._CastFrom(geom)
+
+    verts = meshatom.verts
+    faces = meshatom.faces
 
     mesh = tri.GetMesh()
     mesh.SetNumVerts(len(verts))
