@@ -1,10 +1,10 @@
 
 import os
 
-from max_com import generate_mesh_in_3dsmax
-from maya_com import generate_mesh_in_maya
+from src.coms.max_com import generate_mesh_in_3dsmax
+from src.coms.maya_com import generate_mesh_in_maya
 
-from atom import Vertex
+from src.atom import Vertex
 
 CONFIG = {}
 
@@ -46,14 +46,14 @@ def main():
 
     v = 10.0
     vs = [
-        Vertex(0, -v, -v, -v),
-        Vertex(1, -v, +v, -v),
-        Vertex(2, -v, +v, +v),
-        Vertex(3, -v, -v, +v),
-        Vertex(4, +v, -v, -v),
-        Vertex(5, +v, +v, -v),
-        Vertex(6, +v, +v, +v),
-        Vertex(7, +v, -v, +v)
+        Vertex(-v, -v, -v, 0),
+        Vertex(-v, +v, -v, 1),
+        Vertex(-v, +v, +v, 2),
+        Vertex(-v, -v, +v, 3),
+        Vertex(+v, -v, -v, 4),
+        Vertex(+v, +v, -v, 5),
+        Vertex(+v, +v, +v, 6),
+        Vertex(+v, -v, +v, 7)
     ]
 
     fs = []
@@ -64,13 +64,12 @@ def main():
     fs += gen_quad([vs[1], vs[5], vs[6], vs[2]])
     fs += gen_quad([vs[4], vs[5], vs[1], vs[0]])
 
-    MODE = CONFIG["MODE"]
-    if MODE == "MAX":
+    if CONFIG["MODE"] == "MAX":
         generate_mesh_in_3dsmax(vs, fs)
-    elif MODE == "MAYA":
+    elif CONFIG["MODE"] == "MAYA":
         generate_mesh_in_maya(vs, fs)
     else:
-        print("Mode is not defined: " + MODE)
+        print("Mode is not defined: " + CONFIG["MODE"])
 
 
 if __name__ == "__main__":
